@@ -3,7 +3,7 @@ const { buildSchema } = require('graphql')
 module.exports = buildSchema(`
     type testData {
         name: String!
-        age: int
+        age: Int
     }
 
     type rootQuery { 
