@@ -1,5 +1,5 @@
 module.exports = {
-    createUser({ userInput }, req) {
+    createUser: async function ({ userInput }, req) {
         const email = userInput.email
     }
 }
