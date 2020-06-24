@@ -1,5 +1,7 @@
+const User = require('../models/user')
+
 module.exports = {
     createUser: async function ({ userInput }, req) {
-        const email = userInput.email
+        const existingUser = await User.findOne({email: userInput.email})
     }
 }
