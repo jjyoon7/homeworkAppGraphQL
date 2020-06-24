@@ -4,16 +4,16 @@ const User = require('../models/user')
 
 module.exports = {
     createUser: async function ({ userInput }, req) {
-        const error = []
+        const errors = []
 
         if(!validator.isEmail(userInput.email)) {
-            error.push({ message: 'Email invalid' })
+            errors.push({ message: 'Email invalid' })
         }
         if(
             validator.isEmpty(userInput.password) ||
-            !validator.isLength({ min: 5 })
+            !validator.isLength(userInput.password, { min: 5 })
         ) {
-            error.push({ message: 'Password too short' })
+            errors.push({ message: 'Password too short' })
         }
         if(errors.length > 0) {
             const error = new Error('Invalid input')
