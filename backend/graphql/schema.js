@@ -1,16 +1,16 @@
 const { buildSchema } = require('graphql')
 
 module.exports = buildSchema(`
-    type testData {
-        name: String!
-        age: Int
+    type TestData {
+        text: String!
+        views: Int!
     }
 
-    type rootQuery { 
-        rootData: testData
+    type RootQuery { 
+        hello: TestData!
     }
 
     schema { 
-        query: rootQuery 
+        query: RootQuery 
     }
 `)

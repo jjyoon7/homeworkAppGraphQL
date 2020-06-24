@@ -1,8 +1,8 @@
 module.exports = {
-    rootData() {
+    hello() {
         return {
-            name: 'Jay',
-            age: 30
+            text: 'Hello World!',
+            views: 1245
         }
     }
 }

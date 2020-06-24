@@ -9,11 +9,10 @@ const graphqlHttp = require('express-graphql')
 const graphqlSchema = require('./graphql/schema')
 const graphqlResolver = require('./graphql/resolvers')
 
+const cors = require('cors')
 const app = express()
 
 const morgan = require('morgan')
-
-const cors = require('cors')
 
 const PORT = 5000 || process.env.PORT
 
@@ -60,7 +59,11 @@ app.use(cors({
 
 app.use(morgan('dev'))
 
-
+app.use('/graphql', graphqlHttp({
+    schema: graphqlSchema,
+    rootValue: graphqlResolver,
+    graphiql: true
+}))
 
 app.use((error, req, res, next) => {
     console.log(error)
@@ -69,11 +72,6 @@ app.use((error, req, res, next) => {
     const data = error.data
     res.status(status).json({ message: message, data: data})
 })
-
-app.use('/graphql', graphqlHttp({
-    schema: graphqlSchema,
-    rootValue: graphqlResolver
-}))
 
 const uri = process.env.ATLAS_URI
 
