@@ -19,5 +19,7 @@ module.exports = {
         })
 
         const createdUser = await user.save()
+
+        return { ...createdUser._doc }
     }
 }
