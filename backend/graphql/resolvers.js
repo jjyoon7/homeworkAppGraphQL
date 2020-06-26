@@ -2,9 +2,7 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const validator = require('validator')
 const User = require('../models/user')
-const { default: post } = require('../../homework-app/src/components/Feed/Post/Post')
-const user = require('../models/user')
-const { create } = require('../models/user')
+const Post = require('../models/post')
 
 module.exports = {
     createUser: async function ({ userInput }, req) {
@@ -88,7 +86,7 @@ module.exports = {
             throw error
         }
 
-        const post = new post({
+        const post = new Post({
             title: userInput.title,
             content: userInput.content,
             imageUrl: userInput.imageUrl
