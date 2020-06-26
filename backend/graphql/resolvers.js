@@ -67,15 +67,20 @@ module.exports = {
         return { token: token, userId: user._id.toString()}
 
     },
-    createMethod: async function({ postInput }, req) {
+    createPost: async function({ postInput }, req) {
+        if (!req.isAuth) {
+            const error = new Error('User cannot be authenticated.')
+            error.code = 401
+            throw error
+        }
         const errors = []
-        if (validator.isEmpty(userInput.title) ||
-            !validator.isLength(userInput.title, { min: 5 })
+        if (validator.isEmpty(postInput.title) ||
+            !validator.isLength(postInput.title, { min: 5 })
         ) {
             errors.push({ message: 'Title is too short.' })
         }
-        if (validator.isEmpty(userInput.content) || 
-            !validator.isLength(userInput.content, { min: 5 })
+        if (validator.isEmpty(postInput.content) || 
+            !validator.isLength(postInput.content, { min: 5 })
         ) {
             errors.push({ message: 'Content is too short.' })
         }
@@ -85,14 +90,24 @@ module.exports = {
             error.code = 422
             throw error
         }
+        const user = User.findById(req.userId)
+
+        if (!user) {
+            const error = new Error('Invalid user.')
+            error.code = 401
+            throw error
+        }
 
         const post = new Post({
-            title: userInput.title,
-            content: userInput.content,
-            imageUrl: userInput.imageUrl
+            title: postInput.title,
+            content: postInput.content,
+            imageUrl: postInput.imageUrl,
+            creator: user
         })
 
         const createdPost = await post.save()
+
+        user.posts.push(createdPost)
 
         return {
             ...createdPost._doc,
