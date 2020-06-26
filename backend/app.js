@@ -16,6 +16,8 @@ const morgan = require('morgan')
 
 const PORT = 5000 || process.env.PORT
 
+const auth = require('./middleware/auth')
+
 const fileStorage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'images')
@@ -58,6 +60,8 @@ app.use(cors({
 }))
 
 app.use(morgan('dev'))
+
+app.use(auth)
 
 app.use('/graphql', graphqlHttp({
     schema: graphqlSchema,
