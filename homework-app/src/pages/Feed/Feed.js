@@ -136,7 +136,9 @@ class Feed extends Component {
             _id
             title
             content
-            creator
+            creator {
+              name
+            }
             createdAt
           }
         }
