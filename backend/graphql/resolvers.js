@@ -130,7 +130,12 @@ module.exports = {
             page = 1
         }
         const totalPosts = await Post.find().countDocuments()
-        const posts = await Post.find().sort({ createdAt: -1 }).populate('creator')
+        const perPage = 2
+        const posts = await Post.find()
+                                .sort({ createdAt: -1 })
+                                .skip((page - 1) * perPage)
+                                .limit(perPage)
+                                .populate('creator')
         const extractedPostsData = posts.map(p => {
             return {
                 ...p._doc, 
