@@ -55,10 +55,31 @@ class Feed extends Component {
       page--;
       this.setState({ postPage: page });
     }
-    fetch('http://localhost:5000/feed/posts?page=' + page, {
+    const graphqlQuery = {
+      query: `
+        {
+          posts {
+            posts {
+              _id
+              title
+              content
+              imageUrl
+              creator { 
+                name 
+              }
+              createdAt
+            }
+            totalPosts
+          }
+        }
+      `
+    }
+    fetch('http://localhost:5000/graphql', {
+      method: 'POST',
       headers: {
         Authorization:  'Bearer ' + this.props.token
-      }
+      },
+      body: JSON.stringify(graphqlQuery)
     })
       .then(res => {
         if (res.status !== 200) {
