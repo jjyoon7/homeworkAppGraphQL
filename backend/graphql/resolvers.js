@@ -117,5 +117,12 @@ module.exports = {
             updatedAt: createdPost.updatedAt.toISOString()
         }
         
+    },
+    posts: async function (args, req) {
+        if (!req.isAuth) {
+            const error = new Error('User cannot be authenticated.')
+            error.code = 401
+            throw error
+        }
     }
 }
