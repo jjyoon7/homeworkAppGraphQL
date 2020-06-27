@@ -63,7 +63,6 @@ class Feed extends Component {
               _id
               title
               content
-              imageUrl
               creator { 
                 name 
               }
@@ -82,20 +81,21 @@ class Feed extends Component {
       body: JSON.stringify(graphqlQuery)
     })
       .then(res => {
-        if (res.status !== 200) {
-          throw new Error('Failed to fetch posts.');
-        }
         return res.json();
       })
       .then(resData => {
+        if (resData.errors) {
+          const error = new Error('Fetching posts failed')
+          throw error
+        }
         this.setState({
-          posts: resData.posts.map( post => {
+          posts: resData.data.posts.posts.map( post => {
             return {
               ...post,
               imagePath: post.imageUrl
             }
           }),
-          totalPosts: resData.totalItems,
+          totalPosts: resData.data.posts.totalPosts,
           postsLoading: false
         });
       })
