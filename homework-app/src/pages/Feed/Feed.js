@@ -157,6 +157,7 @@ class Feed extends Component {
             _id
             title
             content
+            imageUrl
             creator {
               name
             }
@@ -167,25 +168,21 @@ class Feed extends Component {
     }
 
     fetch('http://localhost:5000/graphql', {
-      method: 'POST', 
+      method: 'POST',
+      body: JSON.stringify(graphqlQuery), 
       headers: {
         Authorization:  'Bearer ' + this.props.token,
         'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(graphqlQuery)
+      }
       })
       .then(res => {
         return res.json();
       })
       .then(resData => {
-        if (resData.errors && resData.errors[0].status === 422) {
-          throw new Error(
-            "Validation failed. Make sure the email address isn't used yet!"
-          );
-        }
         if (resData.errors) {
-          throw new Error('Creating a user failed!');
+          throw new Error('Creating Post failed!');
         }
+        console.log(resData)
         const post = {
           _id: resData.data.createPost._id,
           title: resData.data.createPost.title,
@@ -199,16 +196,17 @@ class Feed extends Component {
             const postIndex = prevState.posts.findIndex(
               p => p._id === prevState.editPost._id
             );
-            updatedPosts[postIndex] = post
+            updatedPosts[postIndex] = post;
           } else {
-            updatedPosts.unshift(post)
+            updatedPosts.pop();
+            updatedPosts.unshift(post);
           }
           return {
             posts: updatedPosts,
             isEditing: false,
             editPost: null,
             editLoading: false
-          }
+          };
         });
       })
       .catch(err => {

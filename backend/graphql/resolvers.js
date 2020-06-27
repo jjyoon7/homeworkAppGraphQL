@@ -74,12 +74,14 @@ module.exports = {
             throw error
         }
         const errors = []
-        if (validator.isEmpty(postInput.title) ||
+        if (
+            validator.isEmpty(postInput.title) ||
             !validator.isLength(postInput.title, { min: 5 })
         ) {
             errors.push({ message: 'Title is too short.' })
         }
-        if (validator.isEmpty(postInput.content) || 
+        if (
+            validator.isEmpty(postInput.content) || 
             !validator.isLength(postInput.content, { min: 5 })
         ) {
             errors.push({ message: 'Content is too short.' })
@@ -90,7 +92,7 @@ module.exports = {
             error.code = 422
             throw error
         }
-        const user = User.findById(req.userId)
+        const user = await User.findById(req.userId)
 
         if (!user) {
             const error = new Error('Invalid user.')
