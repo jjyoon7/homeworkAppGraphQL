@@ -130,12 +130,12 @@ module.exports = {
         const posts = await Post.find().sort({ createdAt: -1 }).populate('creator')
         const extractedPostsData = posts.map(p => {
             return {
-              ...p._doc,
-              _id: p._id.toString(),
-              createdAt: p.createdAt.toISOString(),
-              updatedAt: p.updatedAt.toISOString()
-            };
-          })
+                ...p._doc, 
+                _id: p._id.toString(),
+                createAt: p.createdAt.toISOString(),
+                updatedAt: p.updatedAt.toISOString()
+            }
+        })
 
         return {
             posts: extractedPostsData,
