@@ -199,7 +199,7 @@ class Feed extends Component {
             const postIndex = prevState.posts.findIndex(
               p => p._id === prevState.editPost._id
             );
-            updatedPosts[postIndex] = posts
+            updatedPosts[postIndex] = post
           } else {
             updatedPosts.unshift(post)
           }
