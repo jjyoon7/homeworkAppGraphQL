@@ -126,5 +126,18 @@ module.exports = {
         }
         const totalPosts = await Post.find().countDocuments()
         const posts = await Post.find().sort({ createdAt: -1 }).populate('creator')
+        const extractedPostsData = await posts.map(p => {
+            return {
+                ...p._doc, 
+                _id: p._id.toString(),
+                createAt: p.createAt.toISOString(),
+                updatedAt: p.updatedAt.toISOString()
+            }
+        })
+
+        return {
+            posts: extractedPostsData,
+            totalPosts
+        }
     }
 }
