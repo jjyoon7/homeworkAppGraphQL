@@ -153,7 +153,6 @@ class Feed extends Component {
     });
 
     const formData = new FormData();
-    console.log('postData.image', postData.image)
     formData.append('image', postData.image )
 
     if (this.state.editPost) {
@@ -202,7 +201,6 @@ class Feed extends Component {
         if (resData.errors) {
           throw new Error('Creating Post failed!');
         }
-        console.log(resData)
         const post = {
           _id: resData.data.createPost._id,
           title: resData.data.createPost.title,
