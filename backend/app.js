@@ -70,6 +70,7 @@ app.put('/post-image', (req, res, next) => {
     if (req.body.oldPath) {
         deleteImageFile(req.body.oldPath)
     }
+    return res.status(201).json({message: 'File stored', filePath: req.file.path})
 })
 
 app.use('/graphql', graphqlHttp({
