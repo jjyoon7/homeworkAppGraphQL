@@ -150,6 +150,13 @@ class Feed extends Component {
     this.setState({
       editLoading: true
     });
+
+    const formData = new FormData();
+    formData.append('image', postData.image )
+
+    if (this.state.editPost) {
+      formData.append('oldPath', this.state.editPost.imagePath)
+    }
     
     let graphqlQuery = {
       query: `
