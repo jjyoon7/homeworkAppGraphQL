@@ -64,7 +64,12 @@ app.use(morgan('dev'))
 app.use(auth)
 
 app.put('/post-image', (req, res, next) => {
-    
+    if (!req.file) {
+        return res.status(200).json({message: 'File not provided'})
+    }
+    if (req.body.oldPath) {
+        deleteImageFile(req.body.oldPath)
+    }
 })
 
 app.use('/graphql', graphqlHttp({
@@ -101,3 +106,8 @@ mongoose.connect(uri, {
             app.listen(PORT)
         })
         .catch(err => console.log(err))
+
+const deleteImageFile = filePath => {
+    filePath = path.join(__dirname, '..', filePath)
+    fs.unlink(filePath, err => console.log(err))
+}
