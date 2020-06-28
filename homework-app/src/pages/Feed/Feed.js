@@ -157,6 +157,17 @@ class Feed extends Component {
     if (this.state.editPost) {
       formData.append('oldPath', this.state.editPost.imagePath)
     }
+
+    fetch('http://localhost:5000/post-image', {
+      method: 'PUT',
+      headers: {
+        Authorization:  'Bearer ' + this.props.token,
+        'Content-Type': 'application/json'
+      },
+      body: formData
+    })
+      .then()
+      .then()
     
     let graphqlQuery = {
       query: `
