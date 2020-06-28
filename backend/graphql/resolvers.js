@@ -170,5 +170,66 @@ module.exports = {
             createAt: post.createdAt.toISOString(),
             updatedAt: post.updatedAt.toISOString()
         }
+    },
+    updatePost: async function ({ id, postInput }, req) {
+        //check if the author is authorized
+        if (!req.isAuth) {
+            const error = new Error('User cannot be authenticated.')
+            error.code = 401
+            throw error
+        }
+        
+        const post = Post.findById(id).populate('creator')
+
+        //if the post does not exists, throw en error
+        if (!post) {
+            const error = new Error('Cannot find the post')
+            error.code = 404
+            throw error
+        }
+        //check if the person who is trying to edit the post is 
+        //also the person who created the post
+        if (post.creator._id.toString() == req.userId.toString()) {
+            const error = new Error('Unauthorized user.')
+            error.code = 403
+            throw error
+        }
+
+        //check if the user input data is validated
+        const errors = []
+        if (
+            validator.isEmpty(postInput.title) ||
+            !validator.isLength(postInput.title, { min: 5 })
+        ) {
+            errors.push({ message: 'Title is too short.' })
+        }
+        if (
+            validator.isEmpty(postInput.content) || 
+            !validator.isLength(postInput.content, { min: 5 })
+        ) {
+            errors.push({ message: 'Content is too short.' })
+        }
+        if(errors.length > 0) {
+            const error = new Error('Invalid input')
+            error.data = errors
+            error.code = 422
+            throw error
+        }
+        
+        post.title = postInput.title
+        post.content = postInput.content
+
+        //check if the imageUrl has been updated with new imageUrl
+        if (postInput.imageUrl !== 'undefined') {
+            post.imageUrl = postInput.imageUrl
+        }
+
+        const updatedPost = await post.save()
+        return {
+            ...updatedPost._doc,
+            _id: updatedPost._id.toString(),
+            createAt: updatedPost.createdAt.toISOString(),
+            updatedAt: updatedPost.updatedAt.toISOString()
+        }
     }
 }
