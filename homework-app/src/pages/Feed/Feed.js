@@ -163,8 +163,7 @@ class Feed extends Component {
     fetch('http://localhost:5000/post-image', {
       method: 'PUT',
       headers: {
-        Authorization:  'Bearer ' + this.props.token,
-        'Content-Type': 'application/json'
+        Authorization:  'Bearer ' + this.props.token
       },
       body: formData
     })
