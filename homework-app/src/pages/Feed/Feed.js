@@ -152,6 +152,7 @@ class Feed extends Component {
     });
 
     const formData = new FormData();
+    console.log('postData.image', postData.image)
     formData.append('image', postData.image )
 
     if (this.state.editPost) {
@@ -166,8 +167,10 @@ class Feed extends Component {
       },
       body: formData
     })
-      .then()
-      .then()
+      .then(res =>  res.json())
+      .then(fileResData => {
+        const imageUrl = fileResData.filePath
+      })
     
     let graphqlQuery = {
       query: `
