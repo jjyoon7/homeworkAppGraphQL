@@ -170,25 +170,24 @@ class Feed extends Component {
       .then(res =>  res.json())
       .then(fileResData => {
         const imageUrl = fileResData.filePath
+        let graphqlQuery = {
+          query: `
+            mutation {
+              createPost(postInput: { title: "${postData.title}", content: "${postData.content}", imageUrl: "${imageUrl}" }) {
+                _id
+                title
+                content
+                imageUrl
+                creator {
+                  name
+                }
+                createdAt
+              }
+            }
+          `
+        }
       })
     
-    let graphqlQuery = {
-      query: `
-        mutation {
-          createPost(postInput: { title: "${postData.title}", content: "${postData.content}", imageUrl: "someUrl" }) {
-            _id
-            title
-            content
-            imageUrl
-            creator {
-              name
-            }
-            createdAt
-          }
-        }
-      `
-    }
-
     fetch('http://localhost:5000/graphql', {
       method: 'POST',
       body: JSON.stringify(graphqlQuery), 
