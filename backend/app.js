@@ -63,6 +63,10 @@ app.use(morgan('dev'))
 
 app.use(auth)
 
+app.put('/post-image', (req, res, next) => {
+    
+})
+
 app.use('/graphql', graphqlHttp({
     schema: graphqlSchema,
     rootValue: graphqlResolver,
