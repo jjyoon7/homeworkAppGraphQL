@@ -185,6 +185,25 @@ class Feed extends Component {
             }
           `
         }
+
+        if (this.state.editPost) {
+          graphqlQuery = {
+            query: `
+              mutation {
+                updatePost(id: "${this.state.editPost._id}", postInput: { title: "${postData.title}", content: "${postData.content}", imageUrl: "${imageUrl}" }) {
+                  _id
+                  title
+                  content
+                  imageUrl
+                  creator {
+                    name
+                  }
+                  createdAt
+                }
+              }
+            `
+          }
+        }
         return fetch('http://localhost:5000/graphql', {
           method: 'POST',
           body: JSON.stringify(graphqlQuery), 
