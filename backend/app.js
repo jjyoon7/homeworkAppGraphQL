@@ -64,6 +64,9 @@ app.use(morgan('dev'))
 app.use(auth)
 
 app.put('/post-image', (req, res, next) => {
+    if (!req.isAuth) {
+        throw new Error('User not authenticated')
+    }
     if (!req.file) {
         return res.status(200).json({message: 'File not provided'})
     }
