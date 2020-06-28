@@ -187,15 +187,14 @@ class Feed extends Component {
             }
           `
         }
-      })
-    
-    fetch('http://localhost:5000/graphql', {
-      method: 'POST',
-      body: JSON.stringify(graphqlQuery), 
-      headers: {
-        Authorization:  'Bearer ' + this.props.token,
-        'Content-Type': 'application/json'
-      }
+        return fetch('http://localhost:5000/graphql', {
+          method: 'POST',
+          body: JSON.stringify(graphqlQuery), 
+          headers: {
+            Authorization:  'Bearer ' + this.props.token,
+            'Content-Type': 'application/json'
+          }
+          })
       })
       .then(res => {
         return res.json();
