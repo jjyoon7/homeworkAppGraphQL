@@ -214,11 +214,11 @@ class Feed extends Component {
 
         return fetch('http://localhost:5000/graphql', {
           method: 'POST',
-          body: JSON.stringify(graphqlQuery),
           headers: {
             Authorization: 'Bearer ' + this.props.token,
             'Content-Type': 'application/json'
-          }
+          },
+          body: JSON.stringify(graphqlQuery)
         });
       })
       .then(res => {
@@ -281,25 +281,30 @@ class Feed extends Component {
 
   deletePostHandler = postId => {
     this.setState({ postsLoading: true });
-    fetch('http://localhost:5000/feed/post/' + postId, {
-      method: 'DELETE',
+    const graphqlQuery = {
+      query: `
+          mutation {
+            deletePost(id: "${postId}")
+          }
+      `
+    }
+    fetch('http://localhost:5000/graphql', {
+      method: 'POST',
       headers: {
-        Authorization: 'Bearer ' + this.props.token 
-      }
+        Authorization: 'Bearer ' + this.props.token,
+        'Content-Type': 'application/json' 
+      },
+      body: JSON.stringify(graphqlQuery)
     })
       .then(res => {
-        if (res.status !== 200 && res.status !== 201) {
-          throw new Error('Deleting a post failed!');
-        }
         return res.json();
       })
       .then(resData => {
         console.log(resData);
+        if (resData.errors) {
+          throw new Error('Post delete failed!');
+        }
         this.loadPosts();
-        // this.setState(prevState => {
-        //   const updatedPosts = prevState.posts.filter(p => p._id !== postId);
-        //   return { posts: updatedPosts, postsLoading: false };
-        // });
       })
       .catch(err => {
         console.log(err);
