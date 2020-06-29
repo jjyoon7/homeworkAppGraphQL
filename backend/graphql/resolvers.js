@@ -140,7 +140,7 @@ module.exports = {
             return {
                 ...p._doc, 
                 _id: p._id.toString(),
-                createAt: p.createdAt.toISOString(),
+                createdAt: p.createdAt.toISOString(),
                 updatedAt: p.updatedAt.toISOString()
             }
         })
@@ -167,7 +167,7 @@ module.exports = {
         return {
             ...post._doc,
             _id: post._id.toString(),
-            createAt: post.createdAt.toISOString(),
+            createdAt: post.createdAt.toISOString(),
             updatedAt: post.updatedAt.toISOString()
         }
     },
@@ -179,7 +179,7 @@ module.exports = {
             throw error
         }
         
-        const post = Post.findById(id).populate('creator')
+        const post = await Post.findById(id).populate('creator')
 
         //if the post does not exists, throw en error
         if (!post) {
@@ -190,7 +190,7 @@ module.exports = {
         //check if the person who is trying to edit the post is 
         //also the person who created the post
         console.log('post.creator._id', post.creator._id)
-        if (post.creator._id !== req.userId) {
+        if (post.creator._id.toString() !== req.userId.toString()) {
             const error = new Error('Unauthorized user.')
             error.code = 403
             throw error
@@ -229,7 +229,7 @@ module.exports = {
         return {
             ...updatedPost._doc,
             _id: updatedPost._id.toString(),
-            createAt: updatedPost.createdAt.toISOString(),
+            createdAt: updatedPost.createdAt.toISOString(),
             updatedAt: updatedPost.updatedAt.toISOString()
         }
     }
