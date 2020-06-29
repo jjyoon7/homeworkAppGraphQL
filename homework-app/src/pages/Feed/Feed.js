@@ -157,91 +157,57 @@ class Feed extends Component {
     this.setState({
       editLoading: true
     });
-
     const formData = new FormData();
-    formData.append('image', postData.image )
+    formData.append('title', postData.title);
+    formData.append('content', postData.content);
+    formData.append('image', postData.image);
 
-    if (this.state.editPost) {
-      formData.append('oldPath', this.state.editPost.imagePath)
-    }
-
-    fetch('http://localhost:5000/post-image', {
-      method: 'PUT',
-      headers: {
-        Authorization:  'Bearer ' + this.props.token
-      },
-      body: formData
-    })
-      .then(res =>  res.json())
-      .then(fileResData => {
-        const imageUrl = fileResData.filePath
-        let graphqlQuery = {
-          query: `
-            mutation {
-              createPost(postInput: { title: "${postData.title}", content: "${postData.content}", imageUrl: "${imageUrl}" }) {
-                _id
-                title
-                content
-                imageUrl
-                creator {
-                  name
-                }
-                createdAt
-              }
+    let graphqlQuery = {
+      query: `
+        mutation {
+          createPost(postInput: {title: "${postData.title}", content: "${
+        postData.content
+      }", imageUrl: "some url"}) {
+            _id
+            title
+            content
+            imageUrl
+            creator {
+              name
             }
-          `
-        }
-
-        if (this.state.editPost) {
-          // console.log('editPost._id', editPost._id)
-          graphqlQuery = {
-            query: `
-              mutation {
-                updatePost(id: "${this.state.editPost._id}", postInput: { title: "${postData.title}", content: "${postData.content}", imageUrl: "${imageUrl}" }) {
-                  _id
-                  title
-                  content
-                  imageUrl
-                  creator {
-                    name
-                  }
-                  createdAt
-                }
-              }
-            `
+            createdAt
           }
         }
-        fetch('http://localhost:5000/graphql', {
-          method: 'POST',
-          headers: {
-            Authorization:  'Bearer ' + this.props.token,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(graphqlQuery)
-          })
-      })
+      `
+    };
+
+    fetch('http://localhost:5000/graphql', {
+      method: 'POST',
+      body: JSON.stringify(graphqlQuery),
+      headers: {
+        Authorization: 'Bearer ' + this.props.token,
+        'Content-Type': 'application/json'
+      }
+    })
       .then(res => {
         return res.json();
       })
       .then(resData => {
+        if (resData.errors && resData.errors[0].status === 422) {
+          throw new Error(
+            "Validation failed. Make sure the email address isn't used yet!"
+          );
+        }
         if (resData.errors) {
-          throw new Error('Creating Post failed!');
+          throw new Error('User login failed!');
         }
-        
-        let resDataField = 'createPost'
-        
-        if(this.state.editPost) {
-          resDataField = 'updatePost'
-        }
-        console.log('resData.data[resDataField].creator.name',resData.data[resDataField].creator.name)
-        // console.log(resData.data)
+        console.log(resData);
         const post = {
-          _id: resData.data[resDataField]._id,
-          title: resData.data[resDataField].title,
-          content: resData.data[resDataField].content,
-          creator: resData.data[resDataField].creator.name,
-          createdAt: resData.data[resDataField].createdAt,
-          imagePath: resData.data[resDataField].imageUrl
+          _id: resData.data.createPost._id,
+          title: resData.data.createPost.title,
+          content: resData.data.createPost.content,
+          creator: resData.data.createPost.creator,
+          createdAt: resData.data.createPost.createdAt
         };
         this.setState(prevState => {
           let updatedPosts = [...prevState.posts];
