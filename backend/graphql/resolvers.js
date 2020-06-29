@@ -272,5 +272,25 @@ module.exports = {
 
         //return boolean because in the schema, it is expecting it.
         return true
+    },
+    user: async function (args, req) {
+        if (!req.isAuth) {
+            const error = new Error('User cannot be authenticated.')
+            error.code = 401
+            throw error
+        }
+
+        const user = await User.findById(req.userId)
+
+        if (!user) {
+            const error = new Error('Cannot find the user')
+            error.code = 404
+            throw error
+        }
+
+        return {
+            ...user._doc,
+            _id: user._id.toString()
+        }
     }
 }
