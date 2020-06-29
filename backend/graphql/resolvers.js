@@ -241,7 +241,8 @@ module.exports = {
             throw error
         }
 
-        //find the post with id to get the its imageUrl, in order to delete the image data
+        //post has creator field, where it could check if the creator of the post
+        //is also the owner of the post.
         const post = await Post.findById(id)
 
         if (!post) {
@@ -249,7 +250,7 @@ module.exports = {
             error.code = 404
             throw error
         }
-        //check if the person who is trying to edit the post is 
+        //check if the person who is trying to delete the post is 
         //also the person who created the post
         console.log('post.creator._id', post.creator._id)
         if (post.creator.toString() !== req.userId.toString()) {
@@ -257,9 +258,10 @@ module.exports = {
             error.code = 403
             throw error
         }
-
+        //if the person tries to delete the post is the person who created the post,
+        //delete the image data
         deleteImageFile(post.imageUrl)
 
-
+        await Post.findByIdAndRemove(id)
     }
 }
