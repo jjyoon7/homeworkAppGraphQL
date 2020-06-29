@@ -262,6 +262,15 @@ module.exports = {
         //delete the image data
         deleteImageFile(post.imageUrl)
 
+        //remove that post from DB
         await Post.findByIdAndRemove(id)
+
+        //find the user, to delete the post(using 'id' args) from its posts array
+        const user = await User.findById(req.userId)
+        user.posts.pull(id)
+        await user.save()
+
+        //return boolean because in the schema, it is expecting it.
+        return true
     }
 }
