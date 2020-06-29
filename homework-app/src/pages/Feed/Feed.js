@@ -158,8 +158,7 @@ class Feed extends Component {
       editLoading: true
     });
     const formData = new FormData();
-    formData.append('title', postData.title);
-    formData.append('content', postData.content);
+
     formData.append('image', postData.image);
 
     let graphqlQuery = {
@@ -183,31 +182,33 @@ class Feed extends Component {
 
     fetch('http://localhost:5000/graphql', {
       method: 'POST',
-      body: JSON.stringify(graphqlQuery),
       headers: {
         Authorization: 'Bearer ' + this.props.token,
         'Content-Type': 'application/json'
-      }
+      },
+      body: JSON.stringify(graphqlQuery)
     })
       .then(res => {
         return res.json();
       })
       .then(resData => {
-        if (resData.errors && resData.errors[0].status === 422) {
-          throw new Error(
-            "Validation failed. Make sure the email address isn't used yet!"
-          );
-        }
         if (resData.errors) {
-          throw new Error('User login failed!');
+          throw new Error('Edit post failed!');
         }
         console.log(resData);
+
+        let resDataField = 'createPost'
+        
+        if (this.state.editPost) {
+          resDataField = 'updatePost'
+        }
+
         const post = {
-          _id: resData.data.createPost._id,
-          title: resData.data.createPost.title,
-          content: resData.data.createPost.content,
-          creator: resData.data.createPost.creator,
-          createdAt: resData.data.createPost.createdAt
+          _id: resData.data[resDataField]._id,
+          title: resData.data[resDataField].title,
+          content: resData.data[resDataField].content,
+          creator: resData.data[resDataField].creator,
+          createdAt: resData.data[resDataField].createdAt
         };
         this.setState(prevState => {
           let updatedPosts = [...prevState.posts];
