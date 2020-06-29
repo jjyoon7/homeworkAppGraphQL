@@ -189,7 +189,8 @@ module.exports = {
         }
         //check if the person who is trying to edit the post is 
         //also the person who created the post
-        if (post.creator._id.toString() == req.userId.toString()) {
+        console.log('post.creator._id', post.creator._id)
+        if (post.creator._id !== req.userId) {
             const error = new Error('Unauthorized user.')
             error.code = 403
             throw error
