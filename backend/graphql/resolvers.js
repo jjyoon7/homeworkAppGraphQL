@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken')
 const validator = require('validator')
 const User = require('../models/user')
 const Post = require('../models/post')
+const { deleteImageFile } = require('../utils/file')
 
 module.exports = {
     createUser: async function ({ userInput }, req) {
@@ -232,5 +233,33 @@ module.exports = {
             createdAt: updatedPost.createdAt.toISOString(),
             updatedAt: updatedPost.updatedAt.toISOString()
         }
+    },
+    deletePost: async function({ id }, req) {
+        if (!req.isAuth) {
+            const error = new Error('User cannot be authenticated.')
+            error.code = 401
+            throw error
+        }
+
+        //find the post with id to get the its imageUrl, in order to delete the image data
+        const post = await Post.findById(id)
+
+        if (!post) {
+            const error = new Error('Cannot find the post')
+            error.code = 404
+            throw error
+        }
+        //check if the person who is trying to edit the post is 
+        //also the person who created the post
+        console.log('post.creator._id', post.creator._id)
+        if (post.creator.toString() !== req.userId.toString()) {
+            const error = new Error('Unauthorized user.')
+            error.code = 403
+            throw error
+        }
+
+        deleteImageFile(post.imageUrl)
+
+
     }
 }

@@ -13,10 +13,9 @@ const cors = require('cors')
 const app = express()
 
 const morgan = require('morgan')
-
 const PORT = 5000 || process.env.PORT
-
 const auth = require('./middleware/auth')
+const { deleteImageFile } = require('./utils/file')
 
 const fileStorage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -110,8 +109,3 @@ mongoose.connect(uri, {
             app.listen(PORT)
         })
         .catch(err => console.log(err))
-
-const deleteImageFile = filePath => {
-    filePath = path.join(__dirname, '..', filePath)
-    fs.unlink(filePath, err => console.log(err))
-}
