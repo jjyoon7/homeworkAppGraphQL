@@ -1,9 +1,15 @@
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const validator = require('validator')
+
 const User = require('../models/user')
 const Post = require('../models/post')
+
 const { deleteImageFile } = require('../utils/file')
+
+const nodemailer = require('nodemailer')
+const sendgridTransport = require('nodemailer-sendgrid-transport')
+const transporter = nodemailer.createTransport()
 
 module.exports = {
     createUser: async function ({ userInput }, req) {
