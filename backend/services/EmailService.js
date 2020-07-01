@@ -12,8 +12,8 @@ const transporter = nodemailer.createTransport(
     })
 )
 
-const sendConfirmationEmail = (user) => {
-    const token = jwt.sign(
+const sendConfirmationEmail = async (user) => {
+    const token = await jwt.sign(
         {
             userId: user._id.toString(),
             email: user.email
