@@ -6,17 +6,10 @@ const User = require('../models/user')
 const Post = require('../models/post')
 
 const { deleteImageFile } = require('../utils/file')
+const { sendConfirmationEmail } = require('../services/EmailService')
 
 require('dotenv').config()
-const uri_email = process.env.EMAIL_KEY
-
-const nodemailer = require('nodemailer')
-const sendgridTransport = require('nodemailer-sendgrid-transport')
-const transporter = nodemailer.createTransport(sendgridTransport({
-    auth: {
-        api_key: uri_email
-    }
-}))
+const  JWT_SECRET_KEY = process.env.JWT_SECRET_KEY
 
 module.exports = {
     createUser: async function ({ userInput }, req) {
@@ -55,12 +48,14 @@ module.exports = {
 
         const createdUser = await user.save()
         
-        await transporter.sendMail({
-            to: userInput.email,
-            from: 'info@homeworkapp.com',
-            subject: 'User account created.',
-            html: '<h1>User account successfully created.</h1>'
-        }).catch(err => console.log(err))
+        await sendConfirmationEmail(user)
+
+        // await transporter.sendMail({
+        //     to: userInput.email,
+        //     from: 'info@homeworkapp.com',
+        //     subject: 'User account created.',
+        //     html: '<h1>User account successfully created.</h1>'
+        // }).catch(err => console.log(err))
 
         return { ...createdUser._doc, _id: createdUser._id.toString() }
         
@@ -83,7 +78,7 @@ module.exports = {
                 userId: user._id.toString(),
                 email: user.email
             }, 
-            'resolvethiskeyifyoucanbetyoucannotthisiswaytoolong', 
+            JWT_SECRET_KEY, 
             { expiresIn: '1h' }
         )
         return { token: token, userId: user._id.toString()}
