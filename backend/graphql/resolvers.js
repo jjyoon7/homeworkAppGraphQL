@@ -48,14 +48,7 @@ module.exports = {
 
         const createdUser = await user.save()
         
-        await sendConfirmationEmail(user)
-
-        // await transporter.sendMail({
-        //     to: userInput.email,
-        //     from: 'info@homeworkapp.com',
-        //     subject: 'User account created.',
-        //     html: '<h1>User account successfully created.</h1>'
-        // }).catch(err => console.log(err))
+        await sendConfirmationEmail(createdUser)
 
         return { ...createdUser._doc, _id: createdUser._id.toString() }
         
