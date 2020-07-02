@@ -18,10 +18,12 @@ module.exports = buildSchema(`
         password: String
         status: String!
         posts: [Post!]!
+        couunt: Int
     }
 
     type AuthData {
         token: String!
+        refreshToken: String!
         userId: String!
     }
 

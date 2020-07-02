@@ -4,7 +4,6 @@ const validator = require('validator')
 
 const User = require('../models/user')
 const Post = require('../models/post')
-const Token = require('../models/token')
 
 const { deleteImageFile } = require('../utils/file')
 const { sendConfirmationEmail } = require('../services/EmailService')
@@ -47,14 +46,14 @@ module.exports = {
             password: hashedPW
         })
 
-        const createdUser = await user.save()
+        await user.save()
         
-        await sendConfirmationEmail(createdUser)
+        // await sendConfirmationEmail(createdUser)
 
-        return { ...createdUser._doc, _id: createdUser._id.toString() }
+        return { ...user._doc, _id: user._id.toString() }
         
     },
-    login: async function ({ email, password }, res) {
+    login: async function ({ email, password }) {
         const user = await User.findOne({ email: email })
         if (!user) {
             const error = new Error('User not found.')
@@ -67,139 +66,122 @@ module.exports = {
             error.code = 401
             throw error
         }
-        if(!user.isVerified) {
-            const error = new Error('Your account has not been verified.')
-            error.code = 401
-            throw error
-        }
+        const token = jwt.sign(
+            {
+                userId: user._id.toString(),
+                email: user.email
+            }, 
+            JWT_SECRET_KEY, 
+            { expiresIn: '1h' }
+        )
 
         const refreshToken = jwt.sign(
             {
                 userId: user._id.toString(),
-                count: user.count
+                email: user.email
             }, 
             JWT_SECRET_KEY, 
-            { expiresIn: '7d' }
+            { expiresIn: '1h' }
         )
 
-        const accessToken = jwt.sign(
-            {
-                userId: user._id.toString()
-            }, 
-            JWT_SECRET_KEY, 
-            { expiresIn: '15min' }
-        )
 
-        res.cookie('refresh-token', refreshToken, { expires: 60 * 60 * 24 * 7 })
-        res.cookie('access-token', refreshToken, { expires: 60 * 15 })
-
-        return { accessToken: accessToken, userId: user._id.toString()}
+        return { token: token, refreshToken: refreshToken, userId: user._id.toString()}
 
     },
     createPost: async function({ postInput }, req) {
         if (!req.isAuth) {
-            const error = new Error('User cannot be authenticated.')
-            error.code = 401
-            throw error
+          const error = new Error('Not authenticated!');
+          error.code = 401;
+          throw error;
         }
-        const errors = []
+        const errors = [];
         if (
-            validator.isEmpty(postInput.title) ||
-            !validator.isLength(postInput.title, { min: 5 })
+          validator.isEmpty(postInput.title) ||
+          !validator.isLength(postInput.title, { min: 5 })
         ) {
-            errors.push({ message: 'Title is too short.' })
+          errors.push({ message: 'Title is invalid.' });
         }
         if (
-            validator.isEmpty(postInput.content) || 
-            !validator.isLength(postInput.content, { min: 5 })
+          validator.isEmpty(postInput.content) ||
+          !validator.isLength(postInput.content, { min: 5 })
         ) {
-            errors.push({ message: 'Content is too short.' })
+          errors.push({ message: 'Content is invalid.' });
         }
-        if(errors.length > 0) {
-            const error = new Error('Invalid input')
-            error.data = errors
-            error.code = 422
-            throw error
+        if (errors.length > 0) {
+          const error = new Error('Invalid input.');
+          error.data = errors;
+          error.code = 422;
+          throw error;
         }
-        const user = await User.findById(req.userId)
-
+        const user = await User.findById(req.userId);
         if (!user) {
-            const error = new Error('Invalid user.')
-            error.code = 401
-            throw error
+          const error = new Error('Invalid user.');
+          error.code = 401;
+          throw error;
         }
-
         const post = new Post({
-            title: postInput.title,
-            content: postInput.content,
-            imageUrl: postInput.imageUrl,
-            creator: user
-        })
-
-        const createdPost = await post.save()
-
-        user.posts.push(createdPost)
-        await user.save()
-
+          title: postInput.title,
+          content: postInput.content,
+          imageUrl: postInput.imageUrl,
+          creator: user
+        });
+        const createdPost = await post.save();
+        user.posts.push(createdPost);
+        await user.save();
         return {
-            ...createdPost._doc,
-            _id: createdPost._id.toString(),
-            createdAt: createdPost.createdAt.toISOString(),
-            updatedAt: createdPost.updatedAt.toISOString()
-        }
-        
-    },
-    posts: async function ({ page }, req) {
+          ...createdPost._doc,
+          _id: createdPost._id.toString(),
+          createdAt: createdPost.createdAt.toISOString(),
+          updatedAt: createdPost.updatedAt.toISOString()
+        };
+      },
+      posts: async function({ page }, req) {
         if (!req.isAuth) {
-            const error = new Error('User cannot be authenticated.')
-            error.code = 401
-            throw error
+          const error = new Error('Not authenticated!');
+          error.code = 401;
+          throw error;
         }
         if (!page) {
-            page = 1
+          page = 1;
         }
-        const totalPosts = await Post.find().countDocuments()
-        const perPage = 2
+        const perPage = 2;
+        const totalPosts = await Post.find().countDocuments();
         const posts = await Post.find()
-                                .sort({ createdAt: -1 })
-                                .skip((page - 1) * perPage)
-                                .limit(perPage)
-                                .populate('creator')
-        const extractedPostsData = posts.map(p => {
+          .sort({ createdAt: -1 })
+          .skip((page - 1) * perPage)
+          .limit(perPage)
+          .populate('creator');
+        return {
+          posts: posts.map(p => {
             return {
-                ...p._doc, 
-                _id: p._id.toString(),
-                createdAt: p.createdAt.toISOString(),
-                updatedAt: p.updatedAt.toISOString()
-            }
-        })
-
-        return {
-            posts: extractedPostsData,
-            totalPosts
-        }
-    },
-    post: async function ({ id }, req) {
+              ...p._doc,
+              _id: p._id.toString(),
+              createdAt: p.createdAt.toISOString(),
+              updatedAt: p.updatedAt.toISOString()
+            };
+          }),
+          totalPosts: totalPosts
+        };
+      },
+      post: async function({ id }, req) {
         if (!req.isAuth) {
-            const error = new Error('User cannot be authenticated.')
-            error.code = 401
-            throw error
+          const error = new Error('Not authenticated!');
+          error.code = 401;
+          throw error;
         }
-        const post = await Post.findById(id).populate('creator')
-
+        const post = await Post.findById(id).populate('creator');
         if (!post) {
-            const error = new Error('No post found.')
-            error.code = 404
-            throw error
+          const error = new Error('No post found!');
+          error.code = 404;
+          throw error;
         }
-
         return {
-            ...post._doc,
-            _id: post._id.toString(),
-            createdAt: post.createdAt.toISOString(),
-            updatedAt: post.updatedAt.toISOString()
-        }
-    },
+          ...post._doc,
+          _id: post._id.toString(),
+          createdAt: post.createdAt.toISOString(),
+          updatedAt: post.updatedAt.toISOString()
+        };
+      },
     updatePost: async function ({ id, postInput }, req) {
         //check if the author is authorized
         if (!req.isAuth) {
@@ -342,11 +324,5 @@ module.exports = {
             ...user._doc,
             _id: user._id.toString()
         }
-    },
-    confirmation: async function () {
-
-    },
-    resendTokenPost: async function ({
-        
     }
 }

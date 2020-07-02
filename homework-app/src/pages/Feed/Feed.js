@@ -76,8 +76,8 @@ class Feed extends Component {
               title
               content
               imageUrl
-              creator { 
-                name 
+              creator {
+                name
               }
               createdAt
             }
@@ -98,6 +98,7 @@ class Feed extends Component {
       body: JSON.stringify(graphqlQuery)
     })
       .then(res => {
+        // console.log(res)
         return res.json();
       })
       .then(resData => {
@@ -107,12 +108,6 @@ class Feed extends Component {
         }
         this.setState({
           posts: resData.data.posts.posts.map( post => {
-            
-            const createAtType = typeof(post.createdAt)
-            const intData = parseInt(createAtType)
-            const postDate = new Date(intData)
-            const createdDate = postDate.toLocaleDateString('en-US')
-            // console.log( 'postDate', createAtType )
             return {
               ...post,
               imagePath: post.imageUrl
@@ -129,7 +124,7 @@ class Feed extends Component {
     event.preventDefault();
     const graphqlQuery = {
       query: `
-        mutation UpdateUserStatus($userStatus: String) {
+        mutation UpdateUserStatus($userStatus: String!) {
           updateStatus(status: $userStatus) {
             status
           }
@@ -222,8 +217,8 @@ class Feed extends Component {
         if (this.state.editPost) {
           graphqlQuery = {
             query: `
-              mutation UpdateEixstingPost($postId: ID!, $title: String!, $content: String!, $imageUrl: String!){
-                updatePost(id: $postId, postInput: {title: $title, content: $content, imageUrl: $imageUrl) {
+              mutation UpdateExistingPost($postId: ID!, $title: String!, $content: String!, $imageUrl: String!) {
+                updatePost(id: $postId, postInput: {title: $title, content: $content, imageUrl: $imageUrl}) {
                   _id
                   title
                   content
