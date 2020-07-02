@@ -323,5 +323,11 @@ module.exports = {
             ...user._doc,
             _id: user._id.toString()
         }
+    },
+    confirmation: async function () {
+
+    },
+    resendTokenPost: async function ({
+        
     }
 }
