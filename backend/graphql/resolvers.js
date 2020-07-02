@@ -4,6 +4,7 @@ const validator = require('validator')
 
 const User = require('../models/user')
 const Post = require('../models/post')
+const Token = require('../models/token')
 
 const { deleteImageFile } = require('../utils/file')
 const { sendConfirmationEmail } = require('../services/EmailService')
@@ -53,7 +54,7 @@ module.exports = {
         return { ...createdUser._doc, _id: createdUser._id.toString() }
         
     },
-    login: async function ({ email, password }) {
+    login: async function ({ email, password }, res) {
         const user = await User.findOne({ email: email })
         if (!user) {
             const error = new Error('User not found.')
@@ -66,15 +67,32 @@ module.exports = {
             error.code = 401
             throw error
         }
-        const token = jwt.sign(
+        if(!user.isVerified) {
+            const error = new Error('Your account has not been verified.')
+            error.code = 401
+            throw error
+        }
+
+        const refreshToken = jwt.sign(
             {
                 userId: user._id.toString(),
-                email: user.email
+                count: user.count
             }, 
             JWT_SECRET_KEY, 
-            { expiresIn: '1h' }
+            { expiresIn: '7d' }
         )
-        return { token: token, userId: user._id.toString()}
+
+        const accessToken = jwt.sign(
+            {
+                userId: user._id.toString()
+            }, 
+            JWT_SECRET_KEY, 
+            { expiresIn: '15min' }
+        )
+
+        res.cookie('refresh-token', refreshToken, { expires: 60 * 60 * 24 * 7 })
+
+        return { accessToken: accessToken, userId: user._id.toString()}
 
     },
     createPost: async function({ postInput }, req) {

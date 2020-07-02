@@ -55,8 +55,6 @@ module.exports = buildSchema(`
         updatePost(id: ID!, postInput: PostInputData): Post!
         deletePost(id: ID!): Boolean
         updateStatus(status: String!): User!
-        resendTokenPost(token: String!) : Token
-        confirmation(token: String!): Boolean
     }
 
     schema { 
