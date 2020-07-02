@@ -91,6 +91,7 @@ module.exports = {
         )
 
         res.cookie('refresh-token', refreshToken, { expires: 60 * 60 * 24 * 7 })
+        res.cookie('access-token', refreshToken, { expires: 60 * 15 })
 
         return { accessToken: accessToken, userId: user._id.toString()}
 
