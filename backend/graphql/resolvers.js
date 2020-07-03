@@ -355,13 +355,20 @@ module.exports = {
         refreshToken
       }
     },
-    updatePassword: async function ({ email, password }, req) {
+    updatePassword: async function ({ email, password, refreshToken }, req) {
       //if the user exists and the token is correct
       const user = await User.findOne({email: email})
 
       if(!user) {
         const error = new Error('User with this email does not exist.')
         error.code = 404
+        throw error
+      }
+
+      //if user.refreshToken is not same as the refreshToken, then do not update the password
+      if(user.refreshToken !== refreshToken) {
+        const error = new Error('Unauthorized user for this action.')
+        error.code = 403
         throw error
       }
 
