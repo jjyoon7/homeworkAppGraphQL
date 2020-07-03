@@ -328,7 +328,7 @@ module.exports = {
     resetPassword: async function ({ email }, req) {
       //check if the user exists with email input
       console.log(email)
-      const user = await User.findOne(req.userId)
+      const user = await User.findOne({email: email})
 
       if (!user) {
         const error = new Error('User with this email does not exist.')

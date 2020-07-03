@@ -12,8 +12,8 @@ const transporter = nodemailer.createTransport(
     })
 )
 
-const sendConfirmationEmail = async (user) => {
-    const token = await jwt.sign(
+exports.sendConfirmationEmail = async (user) => {
+    const token = jwt.sign(
         {
             userId: user._id.toString(),
             email: user.email
@@ -35,8 +35,8 @@ const sendConfirmationEmail = async (user) => {
     })
 }
 
-const sendResetEmail = async (user) => {
-    const refreshToken = await jwt.sign(
+exports.sendResetEmail = async (user) => {
+    const refreshToken = jwt.sign(
         {
             userId: user._id.toString(),
             email: user.email
@@ -57,6 +57,3 @@ const sendResetEmail = async (user) => {
         console.log(err.response.body)
     })
 }
-
-exports.sendConfirmationEmail = sendConfirmationEmail
-exports.sendResetEmail = sendResetEmail
