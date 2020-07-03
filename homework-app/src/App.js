@@ -12,8 +12,8 @@ import SinglePostPage from './pages/Feed/SinglePost/SinglePost';
 import LoginPage from './pages/Auth/Login';
 import SignupPage from './pages/Auth/Signup';
 import Reset from './pages/Auth/Reset';
+import UpdatePassword from './pages/Auth/UpdatePassword';
 import './App.css';
-import auth from './pages/Auth/Auth';
 
 class App extends Component {
   state = {
@@ -181,8 +181,8 @@ class App extends Component {
     console.log('restHandler event.value', authData.email)
     const graphqlQuery = {
       query: `
-        mutation ResetPassword($email: String!) {
-          resetPassword(email: $email) {
+        mutation ResetRequest($email: String!) {
+          resetRequest(email: $email) {
             userId
           }
         }
@@ -207,6 +207,56 @@ class App extends Component {
           throw new Error('Password reset request failed!');
         }
         console.log(resData);
+        console.log(resData)
+        this.setState({ isAuth: false, authLoading: false });
+        this.props.history.replace('/');
+      })
+      .catch(err => {
+        console.log(err);
+        this.setState({
+          isAuth: false,
+          authLoading: false,
+          error: err
+        });
+      });
+  };
+
+  updatePasswordHandler = (event, authData) => {
+    event.preventDefault();
+    console.log('authData updatePasswordHandler', authData)
+    this.setState({ authLoading: true });
+    const graphqlQuery = {
+      query: `
+          mutation UpdateNewPassword( $email: String!, $password: String! ){
+            updatePassword(email: $email, password: $password) {
+                                    _id
+                                  }
+          }
+      `,
+      variables: {
+        email: authData.passwordForm.email.value,
+        password: authData.passwordForm.password.value
+      }
+    }
+    fetch('http://localhost:5000/graphql', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(graphqlQuery)
+    })
+      .then(res => {
+        return res.json();
+      })
+      .then(resData => {
+        if (resData.errors && resData.errors[0].status === 422) {
+          throw new Error(
+            "Validation failed. Make sure the email address isn't used yet!"
+          );
+        }
+        if (resData.errors) {
+          throw new Error('Creating a user failed!');
+        }
         console.log(resData)
         this.setState({ isAuth: false, authLoading: false });
         this.props.history.replace('/');
@@ -263,6 +313,17 @@ class App extends Component {
             <Reset
               {...props}
               onReset={this.resetHandler}
+              loading={this.state.authLoading}
+            />
+          )}
+        />
+        <Route
+          path="/reset/password"
+          exact
+          render={props => (
+            <UpdatePassword
+              {...props}
+              onReset={this.updatePasswordHandler}
               loading={this.state.authLoading}
             />
           )}

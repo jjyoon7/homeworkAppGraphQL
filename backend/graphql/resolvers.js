@@ -325,7 +325,7 @@ module.exports = {
             _id: user._id.toString()
         }
     },
-    resetPassword: async function ({ email }, req) {
+    resetRequest: async function ({ email }, req) {
       //check if the user exists with email input
       console.log(email)
       const user = await User.findOne({email: email})
@@ -352,6 +352,25 @@ module.exports = {
         ...user._doc,
         userId: user._id.toString()
         // refreshToken
+      }
+    },
+    updatePassword: async function ({ email, password }, req) {
+      //if the user exists and the token is correct
+      const user = await User.findOne({email: email})
+
+      if(!user) {
+        const error = new Error('User with this email does not exist.')
+        error.code = 404
+        throw error
+      }
+
+      user = {
+        password: password
+      }
+
+      return {
+        ...user._doc,
+        _id: user._id.toString()
       }
     }
 }
