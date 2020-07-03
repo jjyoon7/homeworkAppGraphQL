@@ -6,7 +6,7 @@ const User = require('../models/user')
 const Post = require('../models/post')
 
 const { deleteImageFile } = require('../utils/file')
-const { sendConfirmationEmail } = require('../services/EmailService')
+const { sendConfirmationEmail, sendResetEmail } = require('../services/EmailService')
 
 require('dotenv').config()
 const  JWT_SECRET_KEY = process.env.JWT_SECRET_KEY
@@ -338,7 +338,7 @@ module.exports = {
 
       //send email to user with token, where user can update the password
 
-      await sendConfirmationEmail(user)
+      await sendResetEmail(user)
       // const refreshToken = jwt.sign(
       //   {
       //       userId: user._id.toString(),

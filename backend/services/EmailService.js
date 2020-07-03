@@ -35,4 +35,28 @@ const sendConfirmationEmail = async (user) => {
     })
 }
 
+const sendResetEmail = async (user) => {
+    const refreshToken = await jwt.sign(
+        {
+            userId: user._id.toString(),
+            email: user.email
+        }, 
+        JWT_SECRET_KEY, 
+        { expiresIn: '1h' }
+    ) 
+    const url = `http://localhost:5000/confirmation/${refreshToken}`
+
+    transporter.sendMail({
+        from: 'jay.yoon7@gmail.com',
+        to: `${user.email}`,
+        subject: `Reset your password, ${user.name} - homeworkApp`,
+        html: `Reset your password <a href=${url}>${url}</a>`
+    }).then(() => {
+        console.log('Reset email sent.')
+    }).catch(err => {
+        console.log(err.response.body)
+    })
+}
+
 exports.sendConfirmationEmail = sendConfirmationEmail
+exports.sendResetEmail = sendResetEmail
