@@ -44,7 +44,7 @@ exports.sendResetEmail = async (user) => {
         JWT_SECRET_KEY, 
         { expiresIn: '1h' }
     ) 
-    const url = `http://localhost:5000/confirmation/${refreshToken}`
+    const url = `http://localhost:5000/reset/${refreshToken}`
 
     transporter.sendMail({
         from: 'jay.yoon7@gmail.com',
