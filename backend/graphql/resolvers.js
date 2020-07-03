@@ -366,7 +366,7 @@ module.exports = {
       }
 
       //if user.refreshToken is not same as the refreshToken, then do not update the password
-      const isEqual = await bcrypt.compare(refreshToken, user.refreshToken)
+      const isEqual = await jwt.verify(refreshToken, user.refreshToken)
       if(!isEqual) {
         const error = new Error('Unauthorized user for this action.')
         error.code = 403
@@ -376,6 +376,8 @@ module.exports = {
       user = {
         password: password
       }
+
+      await user.save()
 
       return {
         ...user._doc,
