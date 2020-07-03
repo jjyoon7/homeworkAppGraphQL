@@ -349,6 +349,10 @@ module.exports = {
 
       await sendResetEmail(user, refreshToken)
 
+      user.refreshToken = refreshToken
+
+      await user.save()
+
       return {
         ...user._doc,
         userId: user._id.toString(),
