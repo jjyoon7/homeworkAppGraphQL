@@ -366,7 +366,8 @@ module.exports = {
       }
 
       //if user.refreshToken is not same as the refreshToken, then do not update the password
-      if(user.refreshToken !== refreshToken) {
+      const isEqual = await bcrypt.compare(refreshToken, user.refreshToken)
+      if(!isEqual) {
         const error = new Error('Unauthorized user for this action.')
         error.code = 403
         throw error
