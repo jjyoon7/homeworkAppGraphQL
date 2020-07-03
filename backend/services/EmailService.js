@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken')
 require('dotenv').config()
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY
+const VERIFICATION_SECRET_KEY = process.env.VERIFICATION_SECRET_KEY
 
 const transporter = nodemailer.createTransport(
     nodemailerSendgrid({
@@ -18,10 +19,10 @@ exports.sendConfirmationEmail = async (user) => {
             userId: user._id.toString(),
             email: user.email
         }, 
-        JWT_SECRET_KEY, 
+        VERIFICATION_SECRET_KEY, 
         { expiresIn: '1h' }
     ) 
-    const url = `http://localhost:5000/confirmation/${token}`
+    const url = `http://localhost:3000/confirmation/${token}`
 
     transporter.sendMail({
         from: 'jay.yoon7@gmail.com',
@@ -37,7 +38,7 @@ exports.sendConfirmationEmail = async (user) => {
 
 exports.sendResetEmail = async (user, refreshToken) => {
  
-    const url = `http://localhost:5000/reset/password/${refreshToken}`
+    const url = `http://localhost:3000/reset/${refreshToken}`
 
     transporter.sendMail({
         from: 'jay.yoon7@gmail.com',

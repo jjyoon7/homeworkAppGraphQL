@@ -62,6 +62,7 @@ app.use(morgan('dev'))
 
 app.use(auth)
 
+//middleware to save the file and return the filePath
 app.put('/post-image', (req, res, next) => {
     if (!req.isAuth) {
         throw new Error('User not authenticated')
@@ -74,6 +75,21 @@ app.put('/post-image', (req, res, next) => {
     }
     return res.status(201).json({message: 'File stored', filePath: req.file.path})
 })
+
+//middleware to get dynamic refreshToken from the url and verify
+// app.get('/reset/:resetToken', (req, res, next) => {
+//     const fetchedRefreshToken = req.params.refreshToken
+
+//     const user = User.findOne({refreshToken: fetchedRefreshToken})
+
+//     if(!user) {
+//         const error = new Error('Unauthorised email')
+//         error.code = 404
+//         throw error
+//     }
+
+//     return res.status(200).json({ user })
+// })
 
 app.use('/graphql', graphqlHttp({
     schema: graphqlSchema,

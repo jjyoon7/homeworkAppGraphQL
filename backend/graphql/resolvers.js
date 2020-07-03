@@ -10,6 +10,7 @@ const { sendConfirmationEmail, sendResetEmail } = require('../services/EmailServ
 
 require('dotenv').config()
 const  JWT_SECRET_KEY = process.env.JWT_SECRET_KEY
+const  VERIFICATION_SECRET_KEY = process.env.VERIFICATION_SECRET_KEY
 
 module.exports = {
     createUser: async function ({ userInput }, req) {
@@ -48,13 +49,14 @@ module.exports = {
 
         await user.save()
         
-        // await sendConfirmationEmail(createdUser)
+        await sendConfirmationEmail(user)
 
         return { ...user._doc, _id: user._id.toString() }
         
     },
     login: async function ({ email, password }) {
         const user = await User.findOne({ email: email })
+
         if (!user) {
             const error = new Error('User not found.')
             error.code = 401
@@ -66,6 +68,10 @@ module.exports = {
             error.code = 401
             throw error
         }
+        if (!user.isVerified) {
+          const error = new Error('Please verify your email address')
+        }
+
         const token = jwt.sign(
             {
                 userId: user._id.toString(),
@@ -86,6 +92,32 @@ module.exports = {
 
 
         return { token: token, refreshToken: refreshToken, userId: user._id.toString()}
+
+    },
+    verify: async function ({ email, verificationToken }) {
+      const user = await User.findOne({ email: email })
+      if (!user) {
+          const error = new Error('User not found.')
+          error.code = 401
+          throw error
+      }
+      
+      let decodedToken
+      try {
+          decodedToken = jwt.verify(verificationToken, VERIFICATION_SECRET_KEY)
+      } catch (err) {
+        user.isVerified = false
+          return next()
+      }
+
+      user.isVerified = true
+
+      await user.save()
+
+      return { 
+        ...user._doc, 
+        userId: user._id.toString()
+      }
 
     },
     createPost: async function({ postInput }, req) {
@@ -361,7 +393,10 @@ module.exports = {
     },
     updatePassword: async function ({ email, password, refreshToken }, req) {
       //if the user exists and the token is correct
-      const user = await User.findOne({email: email})
+      
+      const fetchededRefreshToken = req.params.refreshToken
+
+      const user = await User.findOne({refreshToken: fetchededRefreshToken})
 
       if(!user) {
         const error = new Error('User with this email does not exist.')
@@ -377,9 +412,7 @@ module.exports = {
         throw error
       }
 
-      user = {
-        password: password
-      }
+      user.password = password
 
       await user.save()
 

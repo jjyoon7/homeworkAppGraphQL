@@ -13,6 +13,7 @@ import LoginPage from './pages/Auth/Login';
 import SignupPage from './pages/Auth/Signup';
 import Reset from './pages/Auth/Reset';
 import UpdatePassword from './pages/Auth/UpdatePassword';
+import VerifyEmail from './pages/Auth/VerifyEmail'
 import './App.css';
 
 class App extends Component {
@@ -87,11 +88,6 @@ class App extends Component {
         return res.json();
       })
       .then(resData => {
-        // if (resData.errors && resData.errors[0].status === 422) {
-        //   throw new Error(
-        //     "Validation failed. Make sure the email address isn't used yet!"
-        //   );
-        // }
         if (resData.errors) {
           throw new Error('User login failed!');
         }
@@ -176,6 +172,69 @@ class App extends Component {
       });
   };
 
+  verifyEmailHandler = (event, authData) => {
+    event.preventDefault();
+
+    const verificationToken = this.props.location.pathname.split('/confirmation/')[1]
+
+    console.log('verificationToken', verificationToken)
+    console.log('authData', authData)
+    console.log('event', event)
+    const graphqlQuery = {
+      query: `
+        query UserLogin($email: String!, $verificationToken: String!){
+          verifyEmail(email: $email, verificationToken: $verificationToken) {
+            _id
+            isVerified
+          }
+        }
+      `,
+      variables: {
+        email: authData.email,
+        verificationToken: verificationToken
+      }
+    };
+    this.setState({ authLoading: true });
+    fetch('http://localhost:5000/graphql', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(graphqlQuery)
+    })
+      .then(res => {
+        return res.json();
+      })
+      .then(resData => {
+        if (resData.errors) {
+          throw new Error('User login failed!');
+        }
+        console.log(resData);
+        this.setState({
+          isAuth: true,
+          token: resData.data.verify.token,
+          authLoading: false,
+          userId: resData.data.login.userId
+        });
+        localStorage.setItem('token', resData.data.verify.token);
+        localStorage.setItem('userId', resData.data.verify.userId);
+        const remainingMilliseconds = 60 * 60 * 1000;
+        const expiryDate = new Date(
+          new Date().getTime() + remainingMilliseconds
+        );
+        localStorage.setItem('expiryDate', expiryDate.toISOString());
+        this.setAutoLogout(remainingMilliseconds);
+      })
+      .catch(err => {
+        console.log(err);
+        this.setState({
+          isAuth: false,
+          authLoading: false,
+          error: err
+        });
+      });
+  };
+
   resetHandler = (event, authData) => {
     event.preventDefault();
     console.log('restHandler event.value', authData.email)
@@ -209,7 +268,7 @@ class App extends Component {
         console.log(resData);
         console.log(resData)
         this.setState({ isAuth: false, authLoading: false });
-        this.props.history.replace('/');
+        // this.props.history.replace('/');
       })
       .catch(err => {
         console.log(err);
@@ -223,19 +282,22 @@ class App extends Component {
 
   updatePasswordHandler = (event, authData) => {
     event.preventDefault();
+
     console.log('authData updatePasswordHandler', authData)
+
     this.setState({ authLoading: true });
     const graphqlQuery = {
       query: `
-          mutation UpdateNewPassword( $email: String!, $password: String! ){
-            updatePassword(email: $email, password: $password) {
+          mutation UpdateNewPassword( $email: String!, $password: String!, refreshToken: String! ){
+            updatePassword(email: $email, password: $password, refreshToken: $refreshToken) {
                                     _id
                                   }
           }
       `,
       variables: {
         email: authData.passwordForm.email.value,
-        password: authData.passwordForm.password.value
+        password: authData.passwordForm.password.value,
+        refreshToken: authData.passwordForm.refreshToken.value
       }
     }
     fetch('http://localhost:5000/graphql', {
@@ -259,7 +321,7 @@ class App extends Component {
         }
         console.log(resData)
         this.setState({ isAuth: false, authLoading: false });
-        this.props.history.replace('/');
+        // this.props.history.replace('/');
       })
       .catch(err => {
         console.log(err);
@@ -307,6 +369,17 @@ class App extends Component {
           )}
         />
         <Route
+          path="/confirmation/:verificationToken"
+          exact
+          render={props => (
+            <VerifyEmail
+              {...props}
+              onVerifyEmail={this.verifyEmailHandler}
+              loading={this.state.authLoading}
+            />
+          )}
+        />
+        <Route
           path="/reset"
           exact
           render={props => (
@@ -318,7 +391,7 @@ class App extends Component {
           )}
         />
         <Route
-          path="/reset/password"
+          path="/reset/:refreshToken"
           exact
           render={props => (
             <UpdatePassword

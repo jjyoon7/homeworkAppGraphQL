@@ -68,9 +68,9 @@ class UpdatePassword extends Component {
             control="input"
             onChange={this.inputChangeHandler}
             onBlur={this.inputBlurHandler.bind(this, 'password')}
-            value={this.state.signupForm['password'].value}
-            valid={this.state.signupForm['password'].valid}
-            touched={this.state.signupForm['password'].touched}
+            // value={this.state.signupForm['password'].value}
+            // valid={this.state.signupForm['password'].valid}
+            // touched={this.state.signupForm['password'].touched}
           />
           <Button design="raised" type="submit" loading={this.props.loading}>
             Update Password

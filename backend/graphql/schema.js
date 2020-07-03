@@ -18,7 +18,7 @@ module.exports = buildSchema(`
         password: String
         status: String!
         posts: [Post!]!
-        couunt: Int
+        isVerified: Boolean!
     }
 
     type AuthData {
@@ -46,6 +46,7 @@ module.exports = buildSchema(`
 
     type RootQuery {
         login(email: String!, password: String!): AuthData!
+        verify(email: String!, verificationToken: String!): User!
         posts(page: Int): PostData!
         post(id: ID!): Post! 
         user: User!
@@ -58,7 +59,7 @@ module.exports = buildSchema(`
         deletePost(id: ID!): Boolean
         updateStatus(status: String!): User!
         resetRequest(email: String!): AuthData!
-        updatePassword(email: String!, password: String!): User!
+        updatePassword(email: String!, password: String!, refreshToken: String!): User!
     }
 
     schema { 
