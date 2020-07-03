@@ -9,7 +9,7 @@ const { deleteImageFile } = require('../utils/file')
 const { sendConfirmationEmail, sendResetEmail } = require('../services/EmailService')
 
 require('dotenv').config()
-const  JWT_SECRET_KEY = process.env.JWT_SECRET_KEY
+const  RESET_PASSWORD_SECRET_KEY = process.env.RESET_PASSWORD_SECRET_KEY
 const  VERIFICATION_SECRET_KEY = process.env.VERIFICATION_SECRET_KEY
 
 module.exports = {
@@ -372,20 +372,7 @@ module.exports = {
 
       //send email to user with token, where user can update the password
 
-      const refreshToken = jwt.sign(
-        {
-            userId: user._id.toString(),
-            email: user.email
-        }, 
-        JWT_SECRET_KEY, 
-        { expiresIn: '1h' }
-      )
-
-      await sendResetEmail(user, refreshToken)
-
-      user.refreshToken = refreshToken
-
-      await user.save()
+      await sendResetEmail(user)
 
       return {
         ...user._doc,
@@ -393,24 +380,34 @@ module.exports = {
         refreshToken
       }
     },
-    updatePassword: async function ({ email, password, refreshToken }, req) {
+    updatePassword: async function ({ password, resetPasswordToken }, req) {
       //if the user exists and the token is correct
       
-      const fetchededRefreshToken = req.params.refreshToken
+      // const fetchededRefreshToken = req.params.refreshToken
 
-      const user = await User.findOne({refreshToken: fetchededRefreshToken})
+      //if user.refreshToken is not same as the refreshToken, then do not update the password
+
+      let decodedToken
+      try {
+          decodedToken = jwt.verify(resetPasswordToken, VERIFICATION_SECRET_KEY)
+          console.log('decodedToken.email', decodedToken.email)
+      } catch (err) {
+        user.isVerified = false
+          return next()
+      }
+
+      // const isEqual = await bcrypt.compare(resetPassword, user.refreshToken)
+      // if(!isEqual) {
+      //   const error = new Error('Unauthorized user for this action.')
+      //   error.code = 403
+      //   throw error
+      // }
+
+      const user = await User.findOne({email: decodedToken.email})
 
       if(!user) {
         const error = new Error('User with this email does not exist.')
         error.code = 404
-        throw error
-      }
-
-      //if user.refreshToken is not same as the refreshToken, then do not update the password
-      const isEqual = await jwt.verify(refreshToken, user.refreshToken)
-      if(!isEqual) {
-        const error = new Error('Unauthorized user for this action.')
-        error.code = 403
         throw error
       }
 

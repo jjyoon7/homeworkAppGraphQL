@@ -172,14 +172,11 @@ class App extends Component {
       });
   };
 
-  verifyEmailHandler = (event, authData) => {
+  verifyEmailHandler = (event) => {
     event.preventDefault();
 
     const verificationToken = this.props.location.pathname.split('/confirmation/')[1]
 
-    console.log('verificationToken', verificationToken)
-    console.log('authData', authData)
-    console.log('event', event)
     const graphqlQuery = {
       query: `
         query VerifyUserEmail($verificationToken: String!){
@@ -253,7 +250,7 @@ class App extends Component {
         }
         console.log(resData);
         this.setState({ isAuth: false, authLoading: false });
-        // this.props.history.replace('/');
+        this.props.history.replace('/');
       })
       .catch(err => {
         console.log(err);
@@ -268,21 +265,22 @@ class App extends Component {
   updatePasswordHandler = (event, authData) => {
     event.preventDefault();
 
-    console.log('authData updatePasswordHandler', authData)
+    const resetPasswordToken = this.props.location.pathname.split('/reset/')[1]
 
+    console.log('resetPasswordToken', resetPasswordToken)
+    console.log('new password value', authData.passwordForm.password.value)
     this.setState({ authLoading: true });
     const graphqlQuery = {
       query: `
-          mutation UpdateNewPassword( $email: String!, $password: String!, refreshToken: String! ){
-            updatePassword(email: $email, password: $password, refreshToken: $refreshToken) {
+          mutation UpdateNewPassword( $password: String!, $resetPasswordToken: String! ){
+            updatePassword(password: $password, resetPasswordToken: $resetPasswordToken) {
                                     _id
                                   }
           }
       `,
       variables: {
-        email: authData.passwordForm.email.value,
         password: authData.passwordForm.password.value,
-        refreshToken: authData.passwordForm.refreshToken.value
+        resetPasswordToken: resetPasswordToken
       }
     }
     fetch('http://localhost:5000/graphql', {

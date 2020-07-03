@@ -96,7 +96,7 @@ class Login extends Component {
             valid={this.state.loginForm['password'].valid}
             touched={this.state.loginForm['password'].touched}
           />
-          <Button design="raised" type="submit" loading={this.props.loading}>
+          <Button design="raised" type="submit">
             Login
           </Button>
           <a href="http://localhost:3000/reset">

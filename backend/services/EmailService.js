@@ -36,9 +36,17 @@ exports.sendConfirmationEmail = async (user) => {
     })
 }
 
-exports.sendResetEmail = async (user, refreshToken) => {
- 
-    const url = `http://localhost:3000/reset/${refreshToken}`
+exports.sendResetEmail = async (user) => {
+    const resetPasswordToken = jwt.sign(
+        {
+            userId: user._id.toString(),
+            email: user.email
+        }, 
+        VERIFICATION_SECRET_KEY, 
+        { expiresIn: '1h' }
+    )
+
+    const url = `http://localhost:3000/reset/${resetPasswordToken}`
 
     transporter.sendMail({
         from: 'jay.yoon7@gmail.com',
