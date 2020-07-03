@@ -326,22 +326,32 @@ module.exports = {
         }
     },
     resetPassword: async function ({ email }, req) {
+      //check if the user exists with email input
       console.log(email)
       const user = await User.findOne(req.userId)
 
-      const refreshToken = jwt.sign(
-        {
-            userId: user._id.toString(),
-            email: user.email
-        }, 
-        JWT_SECRET_KEY, 
-        { expiresIn: '1h' }
-    )
+      if (!user) {
+        const error = new Error('User with this email does not exist.')
+        error.code = 404
+        throw error
+      }
+
+      //send email to user with token, where user can update the password
+
+      await sendConfirmationEmail(user)
+      // const refreshToken = jwt.sign(
+      //   {
+      //       userId: user._id.toString(),
+      //       email: user.email
+      //   }, 
+      //   JWT_SECRET_KEY, 
+      //   { expiresIn: '1h' }
+      // )
 
       return {
         ...user._doc,
-        userId: user._id.toString(),
-        refreshToken
+        userId: user._id.toString()
+        // refreshToken
       }
     }
 }

@@ -184,7 +184,6 @@ class App extends Component {
         mutation ResetPassword($email: String!) {
           resetPassword(email: $email) {
             userId
-            refreshToken
           }
         }
       `,
@@ -208,20 +207,9 @@ class App extends Component {
           throw new Error('Password reset request failed!');
         }
         console.log(resData);
-        this.setState({
-          isAuth: true,
-          refreshToken: resData.data.resetPassword.refreshToken,
-          authLoading: false,
-          userId: resData.data.resetPassword.userId
-        });
-        localStorage.setItem('refreshToken', resData.data.resetPassword.refreshToken);
-        localStorage.setItem('userId', resData.data.resetPassword.userId);
-        const remainingMilliseconds = 60 * 60 * 1000;
-        const expiryDate = new Date(
-          new Date().getTime() + remainingMilliseconds
-        );
-        localStorage.setItem('expiryDate', expiryDate.toISOString());
-        this.setAutoLogout(remainingMilliseconds);
+        console.log(resData)
+        this.setState({ isAuth: false, authLoading: false });
+        this.props.history.replace('/');
       })
       .catch(err => {
         console.log(err);
