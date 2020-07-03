@@ -5,20 +5,14 @@ import Button from '../../components/Button/Button';
 import { required, length, email } from '../../util/validators';
 import Auth from './Auth';
 
-class Login extends Component {
+class Reset extends Component {
   state = {
-    loginForm: {
+    resetForm: {
       email: {
         value: '',
         valid: false,
         touched: false,
         validators: [required, email]
-      },
-      password: {
-        value: '',
-        valid: false,
-        touched: false,
-        validators: [required, length({ min: 5 })]
       },
       formIsValid: false
     }
@@ -27,13 +21,13 @@ class Login extends Component {
   inputChangeHandler = (input, value) => {
     this.setState(prevState => {
       let isValid = true;
-      for (const validator of prevState.loginForm[input].validators) {
+      for (const validator of prevState.resetForm[input].validators) {
         isValid = isValid && validator(value);
       }
       const updatedForm = {
-        ...prevState.loginForm,
+        ...prevState.resetForm,
         [input]: {
-          ...prevState.loginForm[input],
+          ...prevState.resetForm[input],
           valid: isValid,
           value: value
         }
@@ -43,7 +37,7 @@ class Login extends Component {
         formIsValid = formIsValid && updatedForm[inputName].valid;
       }
       return {
-        loginForm: updatedForm,
+        resetForm: updatedForm,
         formIsValid: formIsValid
       };
     });
@@ -53,9 +47,9 @@ class Login extends Component {
     this.setState(prevState => {
       return {
         loginForm: {
-          ...prevState.loginForm,
+          ...prevState.resetForm,
           [input]: {
-            ...prevState.loginForm[input],
+            ...prevState.resetForm[input],
             touched: true
           }
         }
@@ -68,9 +62,8 @@ class Login extends Component {
       <Auth>
         <form
           onSubmit={e =>
-            this.props.onLogin(e, {
-              email: this.state.loginForm.email.value,
-              password: this.state.loginForm.password.value
+            this.props.onReset(e, {
+              email: this.state.loginForm.email.value
             })
           }
         >
@@ -85,27 +78,13 @@ class Login extends Component {
             valid={this.state.loginForm['email'].valid}
             touched={this.state.loginForm['email'].touched}
           />
-          <Input
-            id="password"
-            label="Password"
-            type="password"
-            control="input"
-            onChange={this.inputChangeHandler}
-            onBlur={this.inputBlurHandler.bind(this, 'password')}
-            value={this.state.loginForm['password'].value}
-            valid={this.state.loginForm['password'].valid}
-            touched={this.state.loginForm['password'].touched}
-          />
           <Button design="raised" type="submit" loading={this.props.loading}>
-            Login
+            Reset password
           </Button>
-          <a href="http://localhost:3000/reset">
-            forgot the password
-          </a>
         </form>
       </Auth>
     );
   }
 }
 
-export default Login;
+export default Reset;

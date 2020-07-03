@@ -11,6 +11,7 @@ import FeedPage from './pages/Feed/Feed';
 import SinglePostPage from './pages/Feed/SinglePost/SinglePost';
 import LoginPage from './pages/Auth/Login';
 import SignupPage from './pages/Auth/Signup';
+import Reset from './pages/Auth/Reset';
 import './App.css';
 import auth from './pages/Auth/Auth';
 
@@ -174,6 +175,68 @@ class App extends Component {
       });
   };
 
+  resetHandler = (event, authData) => {
+    event.preventDefault();
+    const graphqlQuery = {
+      query: `
+        query ResetPassword($email: String!, $password: String!){
+          reset(email: $email, password: $password) {
+            token
+            userId
+          }
+        }
+      `,
+      variables: {
+        email: authData.email,
+        password: authData.password
+      }
+    };
+    this.setState({ authLoading: true });
+    fetch('http://localhost:5000/graphql', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(graphqlQuery)
+    })
+      .then(res => {
+        return res.json();
+      })
+      .then(resData => {
+        // if (resData.errors && resData.errors[0].status === 422) {
+        //   throw new Error(
+        //     "Validation failed. Make sure the email address isn't used yet!"
+        //   );
+        // }
+        if (resData.errors) {
+          throw new Error('User login failed!');
+        }
+        console.log(resData);
+        this.setState({
+          isAuth: true,
+          token: resData.data.reset.token,
+          authLoading: false,
+          userId: resData.data.reset.userId
+        });
+        localStorage.setItem('token', resData.data.reset.token);
+        localStorage.setItem('userId', resData.data.reset.userId);
+        const remainingMilliseconds = 60 * 60 * 1000;
+        const expiryDate = new Date(
+          new Date().getTime() + remainingMilliseconds
+        );
+        localStorage.setItem('expiryDate', expiryDate.toISOString());
+        this.setAutoLogout(remainingMilliseconds);
+      })
+      .catch(err => {
+        console.log(err);
+        this.setState({
+          isAuth: false,
+          authLoading: false,
+          error: err
+        });
+      });
+  };
+
   setAutoLogout = milliseconds => {
     setTimeout(() => {
       this.logoutHandler();
@@ -205,6 +268,17 @@ class App extends Component {
             <SignupPage
               {...props}
               onSignup={this.signupHandler}
+              loading={this.state.authLoading}
+            />
+          )}
+        />
+        <Route
+          path="/reset"
+          exact
+          render={props => (
+            <Reset
+              {...props}
+              onReset={this.resetHandler}
               loading={this.state.authLoading}
             />
           )}

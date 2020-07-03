@@ -324,5 +324,8 @@ module.exports = {
             ...user._doc,
             _id: user._id.toString()
         }
+    },
+    resetPassword: async function ({ userInput }, req) {
+      console.log(userInput)
     }
 }
