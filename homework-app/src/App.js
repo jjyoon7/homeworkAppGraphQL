@@ -21,6 +21,7 @@ class App extends Component {
     showMobileNav: false,
     isAuth: false,
     token: null,
+    refreshToken: null,
     userId: null,
     authLoading: false,
     error: null
@@ -182,8 +183,8 @@ class App extends Component {
       query: `
         mutation ResetPassword($email: String!) {
           resetPassword(email: $email) {
-            refreshToken
             userId
+            refreshToken
           }
         }
       `,
@@ -209,12 +210,12 @@ class App extends Component {
         console.log(resData);
         this.setState({
           isAuth: true,
-          token: resData.data.reset.token,
+          refreshToken: resData.data.resetPassword.refreshToken,
           authLoading: false,
-          userId: resData.data.reset.userId
+          userId: resData.data.resetPassword.userId
         });
-        localStorage.setItem('token', resData.data.reset.token);
-        localStorage.setItem('userId', resData.data.reset.userId);
+        localStorage.setItem('refreshToken', resData.data.resetPassword.refreshToken);
+        localStorage.setItem('userId', resData.data.resetPassword.userId);
         const remainingMilliseconds = 60 * 60 * 1000;
         const expiryDate = new Date(
           new Date().getTime() + remainingMilliseconds

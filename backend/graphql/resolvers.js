@@ -325,7 +325,23 @@ module.exports = {
             _id: user._id.toString()
         }
     },
-    resetPassword: async function ( email, req) {
+    resetPassword: async function ({ email }, req) {
       console.log(email)
+      const user = await User.findOne(req.userId)
+
+      const refreshToken = jwt.sign(
+        {
+            userId: user._id.toString(),
+            email: user.email
+        }, 
+        JWT_SECRET_KEY, 
+        { expiresIn: '1h' }
+    )
+
+      return {
+        ...user._doc,
+        userId: user._id.toString(),
+        refreshToken
+      }
     }
 }
