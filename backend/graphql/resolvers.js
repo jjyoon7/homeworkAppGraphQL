@@ -338,20 +338,21 @@ module.exports = {
 
       //send email to user with token, where user can update the password
 
-      await sendResetEmail(user)
-      // const refreshToken = jwt.sign(
-      //   {
-      //       userId: user._id.toString(),
-      //       email: user.email
-      //   }, 
-      //   JWT_SECRET_KEY, 
-      //   { expiresIn: '1h' }
-      // )
+      const refreshToken = jwt.sign(
+        {
+            userId: user._id.toString(),
+            email: user.email
+        }, 
+        JWT_SECRET_KEY, 
+        { expiresIn: '1h' }
+      )
+
+      await sendResetEmail(user, refreshToken)
 
       return {
         ...user._doc,
-        userId: user._id.toString()
-        // refreshToken
+        userId: user._id.toString(),
+        refreshToken
       }
     },
     updatePassword: async function ({ email, password }, req) {

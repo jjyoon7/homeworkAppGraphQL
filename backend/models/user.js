@@ -10,7 +10,8 @@ const userSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Post'
     }],
-    count: { type: Number, default: 0 }
+    count: { type: Number, default: 0 },
+    refreshToken: { type: String }
 })
 
 module.exports = mongoose.model('User', userSchema)
