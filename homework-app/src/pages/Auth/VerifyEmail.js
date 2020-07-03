@@ -6,6 +6,7 @@ import { required, length, email } from '../../util/validators';
 import Auth from './Auth';
 
 class VerifyEmail extends Component {
+
   render() {
     return (
       <Auth>

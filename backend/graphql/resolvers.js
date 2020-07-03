@@ -94,20 +94,22 @@ module.exports = {
         return { token: token, refreshToken: refreshToken, userId: user._id.toString()}
 
     },
-    verify: async function ({ email, verificationToken }) {
-      const user = await User.findOne({ email: email })
+    verify: async function ({ verificationToken }) {
+      let decodedToken
+      try {
+          decodedToken = jwt.verify(verificationToken, VERIFICATION_SECRET_KEY)
+          console.log('decodedToken.email', decodedToken.email)
+      } catch (err) {
+        user.isVerified = false
+          return next()
+      }
+
+      const user = await User.findOne({ email: decodedToken.email })
+      
       if (!user) {
           const error = new Error('User not found.')
           error.code = 401
           throw error
-      }
-      
-      let decodedToken
-      try {
-          decodedToken = jwt.verify(verificationToken, VERIFICATION_SECRET_KEY)
-      } catch (err) {
-        user.isVerified = false
-          return next()
       }
 
       user.isVerified = true

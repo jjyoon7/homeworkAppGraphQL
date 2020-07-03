@@ -182,15 +182,14 @@ class App extends Component {
     console.log('event', event)
     const graphqlQuery = {
       query: `
-        query UserLogin($email: String!, $verificationToken: String!){
-          verifyEmail(email: $email, verificationToken: $verificationToken) {
+        query UserLogin($verificationToken: String!){
+          verifyEmail(verificationToken: $verificationToken) {
             _id
             isVerified
           }
         }
       `,
       variables: {
-        email: authData.email,
         verificationToken: verificationToken
       }
     };
@@ -210,20 +209,6 @@ class App extends Component {
           throw new Error('User login failed!');
         }
         console.log(resData);
-        this.setState({
-          isAuth: true,
-          token: resData.data.verify.token,
-          authLoading: false,
-          userId: resData.data.login.userId
-        });
-        localStorage.setItem('token', resData.data.verify.token);
-        localStorage.setItem('userId', resData.data.verify.userId);
-        const remainingMilliseconds = 60 * 60 * 1000;
-        const expiryDate = new Date(
-          new Date().getTime() + remainingMilliseconds
-        );
-        localStorage.setItem('expiryDate', expiryDate.toISOString());
-        this.setAutoLogout(remainingMilliseconds);
       })
       .catch(err => {
         console.log(err);
