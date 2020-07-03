@@ -94,7 +94,7 @@ module.exports = {
         return { token: token, refreshToken: refreshToken, userId: user._id.toString()}
 
     },
-    verify: async function ({ verificationToken }) {
+    verifyEmail: async function ({ verificationToken }) {
       let decodedToken
       try {
           decodedToken = jwt.verify(verificationToken, VERIFICATION_SECRET_KEY)
@@ -105,7 +105,7 @@ module.exports = {
       }
 
       const user = await User.findOne({ email: decodedToken.email })
-      
+
       if (!user) {
           const error = new Error('User not found.')
           error.code = 401
@@ -118,7 +118,7 @@ module.exports = {
 
       return { 
         ...user._doc, 
-        userId: user._id.toString()
+        _id: user._id.toString()
       }
 
     },

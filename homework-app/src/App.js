@@ -182,7 +182,7 @@ class App extends Component {
     console.log('event', event)
     const graphqlQuery = {
       query: `
-        query UserLogin($verificationToken: String!){
+        query VerifyUserEmail($verificationToken: String!){
           verifyEmail(verificationToken: $verificationToken) {
             _id
             isVerified
@@ -206,9 +206,10 @@ class App extends Component {
       })
       .then(resData => {
         if (resData.errors) {
-          throw new Error('User login failed!');
+          throw new Error('Email verification failed!');
         }
         console.log(resData);
+        this.props.history.replace('/');
       })
       .catch(err => {
         console.log(err);
@@ -251,7 +252,6 @@ class App extends Component {
           throw new Error('Password reset request failed!');
         }
         console.log(resData);
-        console.log(resData)
         this.setState({ isAuth: false, authLoading: false });
         // this.props.history.replace('/');
       })
