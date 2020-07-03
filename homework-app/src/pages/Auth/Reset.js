@@ -74,9 +74,9 @@ class Reset extends Component {
             control="input"
             onChange={this.inputChangeHandler}
             onBlur={this.inputBlurHandler.bind(this, 'email')}
-            value={this.state.loginForm['email'].value}
-            valid={this.state.loginForm['email'].valid}
-            touched={this.state.loginForm['email'].touched}
+            // value={this.state.loginForm['email'].value}
+            // valid={this.state.loginForm['email'].valid}
+            // touched={this.state.loginForm['email'].touched}
           />
           <Button design="raised" type="submit" loading={this.props.loading}>
             Reset password

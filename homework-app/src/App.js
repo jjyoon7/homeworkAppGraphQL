@@ -177,18 +177,18 @@ class App extends Component {
 
   resetHandler = (event, authData) => {
     event.preventDefault();
+    console.log('restHandler event.value', authData.email)
     const graphqlQuery = {
       query: `
-        query ResetPassword($email: String!, $password: String!){
-          reset(email: $email, password: $password) {
-            token
+        mutation ResetPassword($email: String!) {
+          resetPassword(email: $email) {
+            refreshToken
             userId
           }
         }
       `,
       variables: {
-        email: authData.email,
-        password: authData.password
+        email: authData.email
       }
     };
     this.setState({ authLoading: true });
@@ -203,13 +203,8 @@ class App extends Component {
         return res.json();
       })
       .then(resData => {
-        // if (resData.errors && resData.errors[0].status === 422) {
-        //   throw new Error(
-        //     "Validation failed. Make sure the email address isn't used yet!"
-        //   );
-        // }
         if (resData.errors) {
-          throw new Error('User login failed!');
+          throw new Error('Password reset request failed!');
         }
         console.log(resData);
         this.setState({
