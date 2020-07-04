@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken')
 
 require('dotenv').config()
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY
-const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY
+const RESET_PASSWORD_SECRET_KEY = process.env.RESET_PASSWORD_SECRET_KEY
 const VERIFICATION_SECRET_KEY = process.env.VERIFICATION_SECRET_KEY
 
 const transporter = nodemailer.createTransport(
@@ -58,4 +58,18 @@ exports.sendResetEmail = async (user) => {
     }).catch(err => {
         console.log(err.response.body)
     })
+}
+
+exports.sendPasswordResetConfirmationEmail = async (user) => {
+    transporter.sendMail({
+        from: 'jay.yoon7@gmail.com',
+        to: `${user.email}`,
+        subject: `Reset password succeed, ${user.name} - homeworkApp`,
+        html: `Your password has been updated.`
+    }).then(() => {
+        console.log('Password reset confirmation email sent.')
+    }).catch(err => {
+        console.log(err.response.body)
+    })
+
 }

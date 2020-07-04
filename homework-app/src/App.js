@@ -264,22 +264,22 @@ class App extends Component {
 
   updatePasswordHandler = (event, authData) => {
     event.preventDefault();
-
+    this.setState({ authLoading: true });
     const resetPasswordToken = this.props.location.pathname.split('/reset/')[1]
 
     console.log('resetPasswordToken', resetPasswordToken)
     console.log('new password value', authData.passwordForm.password.value)
-    this.setState({ authLoading: true });
+    
     const graphqlQuery = {
       query: `
-          mutation UpdateNewPassword( $password: String!, $resetPasswordToken: String! ){
-            updatePassword(password: $password, resetPasswordToken: $resetPasswordToken) {
+          mutation UpdateNewPassword( $newPassword: String!, $resetPasswordToken: String! ){
+            updatePassword(newPassword: $newPassword, resetPasswordToken: $resetPasswordToken) {
                                     _id
                                   }
           }
       `,
       variables: {
-        password: authData.passwordForm.password.value,
+        newPassword: authData.passwordForm.password.value,
         resetPasswordToken: resetPasswordToken
       }
     }
@@ -300,7 +300,7 @@ class App extends Component {
           );
         }
         if (resData.errors) {
-          throw new Error('Creating a user failed!');
+          throw new Error('Updating password failed!');
         }
         console.log(resData)
         this.setState({ isAuth: false, authLoading: false });
@@ -325,6 +325,10 @@ class App extends Component {
   errorHandler = () => {
     this.setState({ error: null });
   };
+
+  testHandler = () => {
+    console.log('test handler triggered')
+  }
 
   render() {
     let routes = (
@@ -363,23 +367,23 @@ class App extends Component {
           )}
         />
         <Route
+          path="/reset/:refreshToken"
+          exact
+          render={props => (
+            <UpdatePassword
+              {...props}
+              // onUpdatePassword={this.testHandler}
+              loading={this.state.authLoading}
+            />
+          )}
+        />
+        <Route
           path="/reset"
           exact
           render={props => (
             <Reset
               {...props}
               onReset={this.resetHandler}
-              loading={this.state.authLoading}
-            />
-          )}
-        />
-        <Route
-          path="/reset/:refreshToken"
-          exact
-          render={props => (
-            <UpdatePassword
-              {...props}
-              onReset={this.updatePasswordHandler}
               loading={this.state.authLoading}
             />
           )}

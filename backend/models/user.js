@@ -10,8 +10,7 @@ const userSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Post'
     }],
-    isVerified: { type: Boolean, default: false },
-    refreshToken: { type: String }
+    isVerified: { type: Boolean, default: false }
 })
 
 module.exports = mongoose.model('User', userSchema)

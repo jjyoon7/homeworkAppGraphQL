@@ -6,11 +6,12 @@ const User = require('../models/user')
 const Post = require('../models/post')
 
 const { deleteImageFile } = require('../utils/file')
-const { sendConfirmationEmail, sendResetEmail } = require('../services/EmailService')
+const { sendConfirmationEmail, sendResetEmail, sendPasswordResetConfirmationEmail } = require('../services/EmailService')
 
 require('dotenv').config()
-const  RESET_PASSWORD_SECRET_KEY = process.env.RESET_PASSWORD_SECRET_KEY
-const  VERIFICATION_SECRET_KEY = process.env.VERIFICATION_SECRET_KEY
+const RESET_PASSWORD_SECRET_KEY = process.env.RESET_PASSWORD_SECRET_KEY
+const VERIFICATION_SECRET_KEY = process.env.VERIFICATION_SECRET_KEY
+const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY
 
 module.exports = {
     createUser: async function ({ userInput }, req) {
@@ -376,48 +377,59 @@ module.exports = {
 
       return {
         ...user._doc,
-        userId: user._id.toString(),
-        refreshToken
+        userId: user._id.toString()
       }
     },
-    updatePassword: async function ({ password, resetPasswordToken }, req) {
-      //if the user exists and the token is correct
-      
-      // const fetchededRefreshToken = req.params.refreshToken
-
-      //if user.refreshToken is not same as the refreshToken, then do not update the password
-
-      let decodedToken
+    updatePassword: async function ({ newPassword, resetPasswordToken }) {
       try {
-          decodedToken = jwt.verify(resetPasswordToken, VERIFICATION_SECRET_KEY)
+          const decodedToken = jwt.verify(resetPasswordToken, VERIFICATION_SECRET_KEY)
+
           console.log('decodedToken.email', decodedToken.email)
+          const user = await User.findOne({email: decodedToken.email});
+          console.log('user found with email address', user)
+          
+          if(!user) {
+            const error = new Error('User with this email does not exist.')
+            error.code = 404
+            throw error
+          }
+
+          const errors = []
+
+          if(
+              validator.isEmpty(newPassword) ||
+              !validator.isLength(newPassword, { min: 5 })
+          ) {
+              errors.push({ message: 'Password too short' })
+          }
+          if(errors.length > 0) {
+              const error = new Error('Invalid input')
+              error.data = errors
+              error.code = 422
+              throw error
+          }
+
+          console.log('user.password', user.password)
+          console.log('updated password', newPassword)
+
+          const hashedPW = await bcrypt.hash(newPassword, 12)
+
+          user.password = hashedPW 
+
+          await user.save()
+
+          console.log('hashedPW', hashedPW)
+          console.log('updated password from saved user', user.password)
+
+          await sendPasswordResetConfirmationEmail(user)
+
+          return {
+            ...user._doc,
+            _id: user._id.toString()
+        }
+        
       } catch (err) {
-        user.isVerified = false
-          return next()
-      }
-
-      // const isEqual = await bcrypt.compare(resetPassword, user.refreshToken)
-      // if(!isEqual) {
-      //   const error = new Error('Unauthorized user for this action.')
-      //   error.code = 403
-      //   throw error
-      // }
-
-      const user = await User.findOne({email: decodedToken.email})
-
-      if(!user) {
-        const error = new Error('User with this email does not exist.')
-        error.code = 404
-        throw error
-      }
-
-      user.password = password
-
-      await user.save()
-
-      return {
-        ...user._doc,
-        _id: user._id.toString()
+          console.log(err)
       }
     }
 }

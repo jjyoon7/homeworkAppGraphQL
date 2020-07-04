@@ -59,7 +59,7 @@ module.exports = buildSchema(`
         deletePost(id: ID!): Boolean
         updateStatus(status: String!): User!
         resetRequest(email: String!): AuthData!
-        updatePassword(passworkd: String!, resetPasswordToken: String!): User!
+        updatePassword(newPassword: String!, resetPasswordToken: String!): User!
     }
 
     schema { 
