@@ -58,6 +58,8 @@ module.exports = {
     login: async function ({ email, password }) {
         const user = await User.findOne({ email: email })
 
+        console.log('user verified in login', user.isVerified)
+
         if (!user) {
             const error = new Error('User not found.')
             error.code = 401
@@ -71,6 +73,7 @@ module.exports = {
         }
         if (!user.isVerified) {
           const error = new Error('Please verify your email address')
+          throw error
         }
 
         const token = jwt.sign(
